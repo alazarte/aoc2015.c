@@ -1,7 +1,9 @@
 #include<stdio.h>
 #include<unistd.h>
 
-typedef struct SpeedInfo {
+#define DEERS 9
+
+typedef struct DeerInfo {
 	int total_moving_seconds;
 	int total_rest_seconds;
 	int kmps;
@@ -11,8 +13,60 @@ typedef struct SpeedInfo {
 	char rested;
 	int points;
 	int distance_covered;
-} speed_info;
+} deer_info;
 
+deer_info make_deer(int kmps, int total_moving_seconds, int total_rest_seconds)
+{
+	deer_info d = {
+		.kmps = kmps,
+		.total_moving_seconds = total_moving_seconds,
+		.total_rest_seconds = total_rest_seconds,
+		.remaining_moving_seconds = total_moving_seconds,
+		.remaining_rest_seconds = 0,
+		.rested = 0,
+		.points = 0,
+		.distance_covered = 0,
+	};
+	return d;
+}
+
+void one_second_step_deers(deer_info deers[DEERS])
+{
+	for (int deer_index = 0; deer_index < 9; deer_index++) {
+		if (deers[deer_index].remaining_rest_seconds > 0) {
+			deers[deer_index].remaining_rest_seconds--;
+		} else if (deers[deer_index].remaining_moving_seconds > 0) {
+			deers[deer_index].remaining_moving_seconds--;
+			deers[deer_index].distance_covered +=
+			    deers[deer_index].kmps;
+		} else if (deers[deer_index].rested) {
+			deers[deer_index].remaining_moving_seconds =
+			    deers[deer_index].total_moving_seconds;
+			deers[deer_index].rested = 0;
+			// process the deer again
+			deer_index--;
+		} else {
+			deers[deer_index].remaining_rest_seconds =
+			    deers[deer_index].total_rest_seconds;
+			deers[deer_index].rested = 1;
+			// process the deer again
+			deer_index--;
+		}
+	}
+}
+
+int farthest_deer_index(deer_info deers[DEERS])
+{
+	int winning_index = -1;
+	int largest_distance = -1;
+	for (int deer_index = 0; deer_index < 9; deer_index++) {
+		if (largest_distance <= deers[deer_index].distance_covered) {
+			winning_index = deer_index;
+			largest_distance = deers[deer_index].distance_covered;
+		}
+	}
+	return winning_index;
+}
 
 int main()
 {
@@ -22,21 +76,14 @@ int main()
 	int deer_index = 0;
 	char ch;
 	int total_seconds = 2503;
-	speed_info deers[9];
+	deer_info deers[9];
 
 	while (read(STDIN_FILENO, &ch, 1) > 0) {
 		if ('0' <= ch && ch <= '9') {
 			current_number = (current_number * 10) + (ch - '0');
 		} else if (ch == '\n') {
-			deers[deer_index].kmps = numbers[0];
-			deers[deer_index].total_moving_seconds = numbers[1];
-			deers[deer_index].total_rest_seconds = numbers[2];
-			deers[deer_index].remaining_moving_seconds = numbers[1];
-			deers[deer_index].remaining_rest_seconds = 0;
-			deers[deer_index].rested = 0;
-			deers[deer_index].points = 0;
-			deers[deer_index].distance_covered = 0;
-			deer_index++;
+			deers[deer_index++] =
+			    make_deer(numbers[0], numbers[1], numbers[2]);
 			numbers_index = 0;
 		} else if (current_number != 0) {
 			numbers[numbers_index++] = current_number;
@@ -44,41 +91,17 @@ int main()
 		}
 	}
 
-	int winning_index = -1;
-	int largest_distance = 0;
-	for(int second=0; second<=total_seconds; second++) {
-		for(int deer_index=0; deer_index<9; deer_index++) {
-			if (largest_distance <= deers[deer_index].distance_covered) {
-				winning_index = deer_index;
-				largest_distance = deers[deer_index].distance_covered;
-			}
-		}
+	int deer = -1;
+	for (int second = 0; second <= total_seconds; second++) {
+		one_second_step_deers(deers);
+		deer = farthest_deer_index(deers);
+		deers[deer].points++;
 
-		deers[winning_index].points++;
-
-		for(int deer_index=0; deer_index<9; deer_index++) {
-			if (deers[deer_index].remaining_rest_seconds > 0) {
-				deers[deer_index].remaining_rest_seconds--;
-			} else if (deers[deer_index].remaining_moving_seconds > 0) {
-				deers[deer_index].remaining_moving_seconds--;
-				deers[deer_index].distance_covered += deers[deer_index].kmps;
-			} else if (deers[deer_index].rested) {
-				deers[deer_index].remaining_moving_seconds = deers[deer_index].total_moving_seconds;
-				deers[deer_index].rested = 0;
-				// process the deer again
-				deer_index--;
-			} else {
-				deers[deer_index].remaining_rest_seconds = deers[deer_index].total_rest_seconds;
-				deers[deer_index].rested = 1;
-				// process the deer again
-				deer_index--;
-			}
-		}
 	}
 
 	int max_distance = 0;
 	int max_points = 0;
-	for (int i=0; i<9; i++) {
+	for (int i = 0; i < 9; i++) {
 		if (max_distance < deers[i].distance_covered) {
 			max_distance = deers[i].distance_covered;
 		}
