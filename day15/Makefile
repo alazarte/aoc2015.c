@@ -7,4 +7,4 @@ cc:
 	$(CC) $(cflags) -o $(out) $(files) main.c
 
 run: cc
-	./$(out)
+	cat input.txt | ./$(out)
