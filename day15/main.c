@@ -1,73 +1,72 @@
 #include<stdio.h>
 
-#define INGREDIENTS 4
+#define TOTAL 4
 #define STATS 5
 
-int final_score(int ingredients[INGREDIENTS][STATS],
-		int spoons_per_ingredient[INGREDIENTS])
+int final_score(int ingredients[TOTAL][STATS], int spoons[TOTAL], char is_500)
 {
-	int ingredients_score[STATS] = { 0 };
-	for (int i = 0; i < INGREDIENTS; i++) {
-		for (int j = 0; j < 4; j++) {
-			ingredients_score[j] +=
-			    ingredients[i][j] * spoons_per_ingredient[i];
+	if (is_500) {
+		int cals = 0;
+		for (int i = 0; i < TOTAL; i++) {
+			cals += ingredients[i][STATS - 1] * spoons[i];
+		}
+		if (cals != 500) {
+			return 0;
 		}
 	}
 
-	int final_score = 1;
-	for (int i = 0; i < 4; i++) {
-		final_score *= ingredients_score[i];
+	int score_per_ingredient[STATS] = { 0 };
+	for (int i = 0; i < STATS - 1; i++) {	// stats
+		for (int j = 0; j < TOTAL; j++) {	// ingredients
+			score_per_ingredient[i] +=
+			    ingredients[j][i] * spoons[j];
+		}
 	}
 
-	return final_score;
+	int total_score = 1;
+	for (int i = 0; i < STATS - 1; i++) {
+		if (score_per_ingredient[i] <= 0)
+			return 0;
+		total_score *= score_per_ingredient[i];
+	}
+
+	return total_score;
 }
 
 int main()
 {
-	int spoons = 100;
-	int ingredients[INGREDIENTS][STATS] = { {2, 0, -2, 0, 3},
+	int ingredients[TOTAL][STATS] = { {2, 0, -2, 0, 3},
 	{0, 5, -3, 0, 3},
 	{0, 0, 5, -1, 8},
-	{0, -1, 0, 5, 8}
+	{0, -1, 0, 5, 8},
 	};
 
-	int spoons_per_ingredient[INGREDIENTS] = { 0, 0, 0, 0 };
-
-	for (int i = 0; i < INGREDIENTS; i++) {
-		spoons_per_ingredient[i] = spoons / INGREDIENTS;
-	}
-
-	int score = 0;
-	int max_score = final_score(ingredients, spoons_per_ingredient);
-	int index_best_spoon = -1;
-
-	for (int m = 0; m < 5000; m++) {
-		for (int i = 0; i < INGREDIENTS; i++) {
-			spoons_per_ingredient[i]--;
-			for (int j = 0; j < INGREDIENTS; j++) {
-				if (j == i)
-					continue;
-				spoons_per_ingredient[j]++;
-				score =
-				    final_score(ingredients,
-						spoons_per_ingredient);
-				if (max_score < score) {
-					max_score = score;
-					index_best_spoon = j;
+	int max_part_one_score = 0, max_part_two_score;
+	for (int a = 1; a < 97; a++) {
+		for (int b = 1; b < 97 - a; b++) {
+			for (int c = 1; c < 97 - a - b; c++) {
+				int d = 100 - a - b - c;
+				if ((a + b + c + d) != 100) {
+					printf("something's wrong\n");
+					return 1;
 				}
-				spoons_per_ingredient[j]--;
-			}
-			if (index_best_spoon != -1) {
-				spoons_per_ingredient[index_best_spoon]++;
-				index_best_spoon = -1;
-			} else {
-				spoons_per_ingredient[i]++;
+				int spoons[TOTAL] = { a, b, c, d };
+
+				int part_one_score =
+				    final_score(ingredients, spoons, 0);
+				if (part_one_score > max_part_one_score)
+					max_part_one_score = part_one_score;
+
+				int part_two_score =
+				    final_score(ingredients, spoons, 1);
+				if (part_two_score > max_part_two_score)
+					max_part_two_score = part_two_score;
 			}
 		}
 	}
 
-	printf("final_score=%d\n", final_score(ingredients, spoons_per_ingredient));
+	printf("Part 1=%d\n", max_part_one_score);
+	printf("Part 2=%d\n", max_part_two_score);
 
-	//ingredients[0] =;
-	//ingredients[1] = ;
+	return 0;
 }
