@@ -2,13 +2,17 @@
 #include"read.h"
 
 int min_containers = 9999;
-int part2 = 0;
+int combinations_min_containers = 0;
 
 int fill(int liters_left, recipient *recipients, int usable, int containers_used)
 {
 	if (liters_left == 0) {
-		if (containers_used == 4) {
-			part2++;
+		if (containers_used < min_containers) {
+			min_containers = containers_used;
+			combinations_min_containers = 0;
+		}
+		if (containers_used == min_containers) {
+			combinations_min_containers++;
 		}
 		return 1;
 	}
@@ -35,5 +39,5 @@ int main()
 {
 	read_input();
 	printf("Part 1: %d\n", fill(150, recipients, 0, 0));
-	printf("Part 2: %d\n", part2);
+	printf("Part 2: %d\n", combinations_min_containers);
 }
