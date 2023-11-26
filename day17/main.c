@@ -1,14 +1,8 @@
 #include<stdio.h>
-
-#define RECIPIENTS 20
+#include"read.h"
 
 int min_containers = 9999;
 int part2 = 0;
-
-typedef struct recipient {
-	int cap;
-	int full;
-} recipient;
 
 int fill(int liters_left, recipient *recipients, int usable, int containers_used)
 {
@@ -39,28 +33,7 @@ int fill(int liters_left, recipient *recipients, int usable, int containers_used
 
 int main()
 {
-	recipient recipients[RECIPIENTS] = {
-		{50, 0},
-		{48, 0},
-		{45, 0},
-		{44, 0},
-		{42, 0},
-		{41, 0},
-		{35, 0},
-		{35, 0},
-		{33, 0},
-		{30, 0},
-		{24, 0},
-		{20, 0},
-		{18, 0},
-		{18, 0},
-		{16, 0},
-		{14, 0},
-		{13, 0},
-		{13, 0},
-		{6, 0},
-		{1, 0},
-	};
-	printf("%d\n", fill(150, recipients, 0, 0));
-	printf("%d\n", part2);
+	read_input();
+	printf("Part 1: %d\n", fill(150, recipients, 0, 0));
+	printf("Part 2: %d\n", part2);
 }
