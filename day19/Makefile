@@ -1,13 +1,17 @@
 out=a.out
 cflags=-Wall -Wextra
+objs=parse_input str_utils
 
-all: cc run
+all: clean cc run
 
 run: cc
 	cat input.txt | ./$(out)
 
-cc:
-	$(CC) $(cflags) -o $(out) main.c
+cc: $(addsuffix .o,$(objs))
+	$(CC) $(cflags) -o $(out) $^ main.c
+
+$(objs):
+	$(CC) -c $@.c
 
 clean:
-	rm a.out read.o
+	rm -f *.o $(out)
